@@ -91,6 +91,41 @@ module.exports = {
 			return res.status(500).json({error: "unable to verify user"});
 		});
 	},
+	login: (req, res) => {
+		
+		// Params
+        let email    = req.body.email;
+        let password = req.body.password;
+
+
+        // Send error if email or password isn't set
+        if (email == null || email == "" || password == null || password == "") {
+            return res.status(400).json({error: 'missing parameters'});
+        }
+
+        models.users.findOne({
+            where: {Email: email}
+        })
+        .then(userFound => {
+            if (userFound) {
+
+                bcrypt.compare(password, userFound.Password, (errBycrypt, resBycrypt) => {
+                    if (resBycrypt) {
+                        return res.status(200).json({UserId: userFound.userId, token: jwtUtils.generateTokenForUser(userFound)});
+                    } else {
+                        return res.status(403).json({error: 'invalid email or password'});
+                    }
+                });
+
+            } else {
+                return res.status(404).json({error: 'invalid email or password'});
+            }
+        })
+        .catch((err) => {
+            return res.status(500).json({error: 'unable to verify user'});
+        });
+
+	},
 	count: (req, res) => {
 		models.Teacher.count()
 		.then(count => {
