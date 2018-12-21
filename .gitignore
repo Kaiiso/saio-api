@@ -1,0 +1,4 @@
+# IGNORING FOLDER
+node_modules/
+utils/
+config/

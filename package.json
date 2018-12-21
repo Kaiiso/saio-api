@@ -1,0 +1,32 @@
+{
+  "name": "school-project-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kaiiso/school-project-api.git"
+  },
+  "author": "Kaiiso",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kaiiso/school-project-api/issues"
+  },
+  "homepage": "https://github.com/Kaiiso/school-project-api#readme",
+  "dependencies": {
+    "async": "^2.6.1",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.5",
+    "dotenv": "^6.1.0",
+    "express": "^4.16.4",
+    "jsonwebtoken": "^8.4.0",
+    "mysql": "^2.16.0",
+    "path": "^0.12.7",
+    "sequelize": "^3.30.4"
+  }
+}
