@@ -9,12 +9,14 @@ const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"
 const PASSWORD_REGEX = /^(?=.*\d).{8,32}$/;
 
 function htmlSpecialChars(text) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+	if (text) {
+		return text
+    	.replace(/&/g, "&amp;")
+    	.replace(/</g, "&lt;")
+    	.replace(/>/g, "&gt;")
+    	.replace(/"/g, "&quot;")
+    	.replace(/'/g, "&#039;");
+	}
 }
 
 // Routes
@@ -103,7 +105,7 @@ module.exports = {
             return res.status(400).json({error: 'missing parameters'});
         }
 
-        models.users.findOne({
+        models.Teacher.findOne({
             where: {Email: email}
         })
         .then(userFound => {
@@ -111,7 +113,7 @@ module.exports = {
 
                 bcrypt.compare(password, userFound.Password, (errBycrypt, resBycrypt) => {
                     if (resBycrypt) {
-                        return res.status(200).json({UserId: userFound.userId, token: jwtUtils.generateTokenForUser(userFound)});
+                        return res.status(200).json({UserId: userFound.UserId, token: jwtUtils.generateTokenForUser(userFound)});
                     } else {
                         return res.status(403).json({error: 'invalid email or password'});
                     }
