@@ -9,6 +9,7 @@ exports.router = (() => {
     // Teachers routes
     apirouter.route('/teacher/register/').post(teachercontrollers.register);
     apirouter.route('/teacher/login/').post(teachercontrollers.login);
+    apirouter.route('/teacher/set-establishment/').post(teachercontrollers.set_establishment);
     apirouter.route('/teacher/count/').get(teachercontrollers.count);
 
     return apirouter;

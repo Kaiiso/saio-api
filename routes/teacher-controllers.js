@@ -1,8 +1,8 @@
 // Imports
-const bcrypt = require("bcryptjs");
-const jwtUtils = require("../utils/jwt.utils");
-const models = require("../models");
-const asyncLib = require("async");
+const bcrypt = require('bcryptjs');
+const jwtUtils = require('../utils/jwt.utils');
+const models = require('../models');
+const asyncLib = require('async');
 
 // REGEX
 const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -11,11 +11,11 @@ const PASSWORD_REGEX = /^(?=.*\d).{8,32}$/;
 function htmlSpecialChars(text) {
 	if (text) {
 		return text
-    	.replace(/&/g, "&amp;")
-    	.replace(/</g, "&lt;")
-    	.replace(/>/g, "&gt;")
-    	.replace(/"/g, "&quot;")
-    	.replace(/'/g, "&#039;");
+    	.replace(/&/g, '&amp;')
+    	.replace(/</g, '&lt;')
+    	.replace(/>/g, '&gt;')
+    	.replace(/'/g, '&quot;')
+    	.replace(/'/g, '&#039;');
 	}
 }
 
@@ -40,28 +40,25 @@ module.exports = {
 		let surname = htmlSpecialChars(req.body.surname);
 		let name = htmlSpecialChars(req.body.name);
 		let password = htmlSpecialChars(req.body.password);
-		let establishment = htmlSpecialChars(req.body.establishment);
 		let timezone = htmlSpecialChars(req.body.timezone);
 		let email = htmlSpecialChars(req.body.email);
 		let displayName = htmlSpecialChars(req.body.displayname);
 
-		if (surname == null || surname == "" || name == null || name == "" || establishment == null || establishment == "" || timezone == null || timezone == "" || email == null || email == "" || displayName == null || displayName == "") return res.status(400).json({ error: "missing parameters" });
+		if (surname == null || surname == '' || name == null || name == '' || timezone == null || timezone == '' || email == null || email == '' || displayName == null || displayName == '') return res.status(400).json({ error: 'missing parameters' });
 
-		if (surname.length > 32 || surname.length < 2) return res.status(400).json({error: "wrong surname (must be length 2 - 32)"});
+		if (surname.length > 32 || surname.length < 2) return res.status(400).json({error: 'wrong surname (must be length 2 - 32)'});
 
-		if (name.length > 32 || name.length < 2) return res.status(400).json({error: "wrong name (must be length 2 - 32)"});
+		if (name.length > 32 || name.length < 2) return res.status(400).json({error: 'wrong name (must be length 2 - 32)'});
 
-		if (!EMAIL_REGEX.test(email)) return res.status(400).json({error: "email is not valid"});
+		if (!EMAIL_REGEX.test(email)) return res.status(400).json({error: 'email is not valid'});
 
-		if (!PASSWORD_REGEX.test(password)) return res.status(400).json({error: "password invalid (must length 8 - 32 and include 1 number"});
+		if (!PASSWORD_REGEX.test(password)) return res.status(400).json({error: 'password invalid (must length 8 - 32 and include 1 number'});
 
-		if (establishment.length > 48) return res.status(400).json({error: "establishment is too long"});
-
-		if (displayName.length > 48) return res.status(400).json({error: "displayname is too long"});
+		if (displayName.length > 48) return res.status(400).json({error: 'displayname is too long'});
 
 		// Verifying if user is already registered
 		models.Teacher.findOne({
-			attributes: ["Email"],
+			attributes: ['Email'],
 			where: {Email: email}
 		})
 		.then(userFound => {
@@ -72,7 +69,6 @@ module.exports = {
 						Surname: surname,
 						Name: name,
 						Password: bcryptedPassword,
-						Establishment: establishment,
 						Timezone: timezone,
 						Email: email,
 						DisplayName: displayName,
@@ -82,15 +78,15 @@ module.exports = {
 						return res.status(201).json({UUID: newUser.UUID});
 					})
 					.catch(err => {
-						return res.status(500).json({error: "cannot add user"});
+						return res.status(500).json({error: 'cannot add user'});
 					});
 				});
 			} else {
-				return res.status(409).json({error: "email is already taken"});
+				return res.status(409).json({error: 'email is already taken'});
 			}
 		})
 		.catch(err => {
-			return res.status(500).json({error: "unable to verify user"});
+			return res.status(500).json({error: 'unable to verify user'});
 		});
 	},
 	login: (req, res) => {
@@ -101,7 +97,7 @@ module.exports = {
 
 
         // Send error if email or password isn't set
-        if (email == null || email == "" || password == null || password == "") {
+        if (email == null || email == '' || password == null || password == '') {
             return res.status(400).json({error: 'missing parameters'});
         }
 
@@ -128,13 +124,54 @@ module.exports = {
         });
 
 	},
+	set_establishment: (req, res) => {
+
+		// Params
+        let headerAuth = req.headers['authorization'];
+		let userIdToken = jwtUtils.getUserId(headerAuth);
+		let establishment = req.body.establishment;
+
+        if (userIdToken < 0) {
+            return res.status(400).json({error: 'you need to be logged'});
+        }
+
+		if (establishment == '' || establishment == null) {
+            return res.status(400).json({error: ''});
+        }
+
+        models.Teacher.findOne({
+			attributes: ['Establishment'],
+            where: {UserId: userIdToken}
+        })
+        .then(userFound => {
+            if (userFound) {
+
+                userFound.update({
+                    Establishment: establishment
+                })
+                .then(() => {
+                    return res.status(201).json(userFound);
+                })
+                .catch((err) => {
+                    return res.status(500).json({'error': 'can\'t update profile'});
+                });
+
+            } else {
+                return res.status(404).json({error: 'user not found'});
+            }
+        })
+        .catch((err) => {
+            return res.status(500).json({error: 'unable to verify user'});
+        });
+
+	},
 	count: (req, res) => {
 		models.Teacher.count()
 		.then(count => {
 			return res.status(200).json({count: count});
 		})
 		.catch(err => {
-			return res.status(500).json({error: "unable to access database"});
+			return res.status(500).json({error: 'unable to access database'});
 		});
 	}
 };
